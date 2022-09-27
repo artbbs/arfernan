@@ -1,0 +1,17 @@
+{
+	"name": "SQL script 6",
+	"properties": {
+		"content": {
+			"query": "SELECT\n    TOP 100 *\nFROM\n    OPENROWSET(\n        BULK 'https://asadatalake1aypsx7.dfs.core.windows.net/wwi-02/sale-poc/sale-20170501.csv',\n        FORMAT = 'CSV',\n        PARSER_VERSION='2.0',\n        FIRSTROW = 2\n    ) WITH (\n        [TransactionId] varchar(50),\n        [CustomerId] int,\n        [ProductId] int,\n        [Quantity] int,\n        [Price] decimal(10,3),\n        [TotalAmount] decimal(10,3),\n        [TransactionDate] varchar(8),\n        [ProfitAmount] decimal(10,3),\n        [Hour] int,\n        [Minute] int,\n        [StoreId] int\n    ) AS [result]\n",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
