@@ -1,0 +1,42 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"workspaceName": {
+			"value": "asaworkspace1aypsx7"
+		},
+		"asadatalake1aypsx7_accountKey": {
+			"value": ""
+		},
+		"asastore1aypsx7_connectionString": {
+			"value": ""
+		},
+		"asaworkspace1aypsx7-WorkspaceDefaultSqlServer_connectionString": {
+			"value": ""
+		},
+		"sqlpool01_connectionString": {
+			"value": ""
+		},
+		"sqlpool01_highperf_connectionString": {
+			"value": ""
+		},
+		"sqlpool01_import01_connectionString": {
+			"value": ""
+		},
+		"sqlpool01_workload01_connectionString": {
+			"value": ""
+		},
+		"sqlpool01_workload02_connectionString": {
+			"value": ""
+		},
+		"asadatalake1aypsx7_properties_typeProperties_url": {
+			"value": "https://asadatalake1aypsx7.dfs.core.windows.net"
+		},
+		"asakeyvault1aypsx7_properties_typeProperties_baseUrl": {
+			"value": "https://asakeyvault1aypsx7.vault.azure.net/"
+		},
+		"asaworkspace1aypsx7-WorkspaceDefaultStorage_properties_typeProperties_url": {
+			"value": "https://asadatalake1aypsx7.dfs.core.windows.net"
+		}
+	}
+}

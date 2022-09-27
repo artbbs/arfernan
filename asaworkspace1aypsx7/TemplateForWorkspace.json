@@ -1,0 +1,732 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"workspaceName": {
+			"type": "string",
+			"metadata": "Workspace name",
+			"defaultValue": "asaworkspace1aypsx7"
+		},
+		"asadatalake1aypsx7_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'asadatalake1aypsx7'"
+		},
+		"asastore1aypsx7_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'asastore1aypsx7'"
+		},
+		"asaworkspace1aypsx7-WorkspaceDefaultSqlServer_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'asaworkspace1aypsx7-WorkspaceDefaultSqlServer'"
+		},
+		"sqlpool01_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'sqlpool01'"
+		},
+		"sqlpool01_highperf_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'sqlpool01_highperf'"
+		},
+		"sqlpool01_import01_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'sqlpool01_import01'"
+		},
+		"sqlpool01_workload01_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'sqlpool01_workload01'"
+		},
+		"sqlpool01_workload02_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'sqlpool01_workload02'"
+		},
+		"asadatalake1aypsx7_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://asadatalake1aypsx7.dfs.core.windows.net"
+		},
+		"asakeyvault1aypsx7_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "https://asakeyvault1aypsx7.vault.azure.net/"
+		},
+		"asaworkspace1aypsx7-WorkspaceDefaultStorage_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://asadatalake1aypsx7.dfs.core.windows.net"
+		}
+	},
+	"variables": {
+		"workspaceId": "[concat('Microsoft.Synapse/workspaces/', parameters('workspaceName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('workspaceName'), '/asadatalake1aypsx7')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('asadatalake1aypsx7_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "SecureString",
+						"value": "[parameters('asadatalake1aypsx7_accountKey')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/asakeyvault1aypsx7')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureKeyVault",
+				"typeProperties": {
+					"baseUrl": "[parameters('asakeyvault1aypsx7_properties_typeProperties_baseUrl')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/asastore1aypsx7')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": "[parameters('asastore1aypsx7_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/asaworkspace1aypsx7-WorkspaceDefaultSqlServer')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"parameters": {
+					"DBName": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlDW",
+				"typeProperties": {
+					"connectionString": "[parameters('asaworkspace1aypsx7-WorkspaceDefaultSqlServer_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/asaworkspace1aypsx7-WorkspaceDefaultStorage')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('asaworkspace1aypsx7-WorkspaceDefaultStorage_properties_typeProperties_url')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/sqlpool01')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDW",
+				"typeProperties": {
+					"connectionString": "[parameters('sqlpool01_connectionString')]",
+					"password": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "asakeyvault1aypsx7",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "SQL-USER-ASA"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/asakeyvault1aypsx7')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/sqlpool01_highperf')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDW",
+				"typeProperties": {
+					"connectionString": "[parameters('sqlpool01_highperf_connectionString')]",
+					"password": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "asakeyvault1aypsx7",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "SQL-USER-ASA"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/asakeyvault1aypsx7')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/sqlpool01_import01')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDW",
+				"typeProperties": {
+					"connectionString": "[parameters('sqlpool01_import01_connectionString')]",
+					"password": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "asakeyvault1aypsx7",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "SQL-USER-ASA"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/asakeyvault1aypsx7')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/sqlpool01_workload01')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDW",
+				"typeProperties": {
+					"connectionString": "[parameters('sqlpool01_workload01_connectionString')]",
+					"password": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "asakeyvault1aypsx7",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "SQL-USER-ASA"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/asakeyvault1aypsx7')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/sqlpool01_workload02')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDW",
+				"typeProperties": {
+					"connectionString": "[parameters('sqlpool01_workload02_connectionString')]",
+					"password": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "asakeyvault1aypsx7",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "SQL-USER-ASA"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/asakeyvault1aypsx7')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/AutoResolveIntegrationRuntime')]",
+			"type": "Microsoft.Synapse/workspaces/integrationRuntimes",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"type": "Managed",
+				"typeProperties": {
+					"computeProperties": {
+						"location": "AutoResolve",
+						"dataFlowProperties": {
+							"computeType": "General",
+							"coreCount": 8,
+							"timeToLive": 0
+						}
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/AzureIntegrationRuntime01')]",
+			"type": "Microsoft.Synapse/workspaces/integrationRuntimes",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"type": "Managed",
+				"typeProperties": {
+					"computeProperties": {
+						"location": "AutoResolve",
+						"dataFlowProperties": {
+							"computeType": "MemoryOptimized",
+							"coreCount": 16,
+							"timeToLive": 60
+						}
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/WorkspaceSystemIdentity')]",
+			"type": "Microsoft.Synapse/workspaces/credentials",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"type": "ManagedIdentity",
+				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Column Level Security')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": null,
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"name": "SQLPool01",
+						"type": "SqlPool"
+					}
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Data Warehouse Optimization')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": null,
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"name": "SQLPool01",
+						"type": "SqlPool"
+					}
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Dynamic Data Masking')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": null,
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"name": "SQLPool01",
+						"type": "SqlPool"
+					}
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Row Level Security')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": null,
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"name": "SQLPool01",
+						"type": "SqlPool"
+					}
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SQL script 1')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- This is auto-generated code\nSELECT\n    TOP 100 *\nFROM\n    OPENROWSET(\n        BULK 'https://asadatalake1aypsx7.dfs.core.windows.net/wwi-02/sale-small/Year=2019/Quarter=Q4/Month=12/Day=20191231/sale-small-20191231-snappy.parquet',\n        FORMAT = 'PARQUET'\n    ) AS [result]\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "master",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SQL script 2')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "SELECT\n    TransactionDate, ProductId,\n        CAST(SUM(ProfitAmount) AS decimal(18,2)) AS [(sum) Profit],\n        CAST(AVG(ProfitAmount) AS decimal(18,2)) AS [(avg) Profit],\n        SUM(Quantity) AS [(sum) Quantity]\nFROM\n    OPENROWSET(\n        BULK 'https://asadatalake1aypsx7.dfs.core.windows.net/wwi-02/sale-small/Year=2019/Quarter=Q4/Month=12/Day=20191231/sale-small-20191231-snappy.parquet',\n        FORMAT='PARQUET'\n    ) AS [r] GROUP BY r.TransactionDate, r.ProductId;\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "master",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SQL script 3')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "SELECT\n    COUNT(*)\nFROM\n    OPENROWSET(\n        BULK 'https://asadatalake1aypsx7.dfs.core.windows.net/wwi-02/sale-small/Year=2019/*/*/*/*',\n        FORMAT='PARQUET'\n    ) AS [r];",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "master",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SQL script 4')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "IF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseParquetFormat') \n\tCREATE EXTERNAL FILE FORMAT [SynapseParquetFormat] \n\tWITH ( FORMAT_TYPE = PARQUET)\nGO\n\nIF NOT EXISTS (SELECT * FROM sys.external_data_sources WHERE name = 'wwi-02_asadatalake1aypsx7_dfs_core_windows_net') \n\tCREATE EXTERNAL DATA SOURCE [wwi-02_asadatalake1aypsx7_dfs_core_windows_net] \n\tWITH (\n\t\tLOCATION = 'abfss://wwi-02@asadatalake1aypsx7.dfs.core.windows.net' \n\t)\nGO\n\nCREATE EXTERNAL TABLE All2019Sales (\n\t[TransactionId] nvarchar(4000),\n\t[CustomerId] int,\n\t[ProductId] smallint,\n\t[Quantity] smallint,\n\t[Price] numeric(38,18),\n\t[TotalAmount] numeric(38,18),\n\t[TransactionDate] int,\n\t[ProfitAmount] numeric(38,18),\n\t[Hour] smallint,\n\t[Minute] smallint,\n\t[StoreId] smallint\n\t)\n\tWITH (\n\tLOCATION = 'sale-small/Year=2019/Quarter=Q4/Month=12/Day=20191231/sale-small-20191231-snappy.parquet',\n\tDATA_SOURCE = [wwi-02_asadatalake1aypsx7_dfs_core_windows_net],\n\tFILE_FORMAT = [SynapseParquetFormat]\n\t)\nGO\n\n\nSELECT TOP 100 * FROM dbo.All2019Sales\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "afb",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Hyperspace')]",
+			"type": "Microsoft.Synapse/workspaces/notebooks",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"nbformat": 4,
+				"nbformat_minor": 2,
+				"bigDataPool": {
+					"referenceName": "SparkPool01",
+					"type": "BigDataPoolReference"
+				},
+				"sessionProperties": {
+					"driverMemory": "28g",
+					"driverCores": 4,
+					"executorMemory": "28g",
+					"executorCores": 4,
+					"numExecutors": 2,
+					"runAsWorkspaceSystemIdentity": false,
+					"conf": {
+						"spark.dynamicAllocation.enabled": "false",
+						"spark.dynamicAllocation.minExecutors": "2",
+						"spark.dynamicAllocation.maxExecutors": "2",
+						"spark.autotune.trackingId": "19487dcd-5419-45d4-a08b-fad6eb30337b"
+					}
+				},
+				"metadata": {
+					"saveOutput": true,
+					"synapse_widget": {
+						"version": "0.1"
+					},
+					"enableDebugMode": false,
+					"kernelspec": {
+						"name": "synapse_pyspark",
+						"display_name": "Synapse PySpark"
+					},
+					"language_info": {
+						"name": "python"
+					},
+					"a365ComputeOptions": {
+						"id": "/subscriptions/6a92bf7a-dc8e-4f7c-b51a-3384671f6ce3/resourceGroups/data-engineering-synapse-1aypsx7/providers/Microsoft.Synapse/workspaces/asaworkspace1aypsx7/bigDataPools/SparkPool01",
+						"name": "SparkPool01",
+						"type": "Spark",
+						"endpoint": "https://asaworkspace1aypsx7.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/SparkPool01",
+						"auth": {
+							"type": "AAD",
+							"authResource": "https://dev.azuresynapse.net",
+							"authHeader": null
+						},
+						"sparkVersion": "2.4",
+						"nodeCount": 3,
+						"cores": 4,
+						"memory": 28,
+						"extraHeader": null
+					},
+					"sessionKeepAliveTimeout": 30
+				},
+				"cells": [
+					{
+						"cell_type": "code",
+						"source": [
+							"from hyperspace import *  \r\n",
+							"from com.microsoft.hyperspace import *\r\n",
+							"from com.microsoft.hyperspace.index import *\r\n",
+							"\r\n",
+							"# Disable BroadcastHashJoin, so Spark will use standard SortMergeJoin. Currently, Hyperspace indexes utilize SortMergeJoin to speed up query.\r\n",
+							"spark.conf.set(\"spark.sql.autoBroadcastJoinThreshold\", -1)\r\n",
+							"\r\n",
+							"# Replace the value below with the name of your primary ADLS Gen2 account for your Synapse workspace\r\n",
+							"datalake = 'asadatalake1aypsx7'\r\n",
+							"\r\n",
+							"dfSales = spark.read.parquet(\"abfss://wwi-02@\" + datalake + \".dfs.core.windows.net/sale-small/Year=2019/Quarter=Q4/Month=12/*/*.parquet\")\r\n",
+							"dfSales.show(10)\r\n",
+							"\r\n",
+							"dfCustomers = spark.read.load(\"abfss://wwi-02@\" + datalake + \".dfs.core.windows.net/data-generators/generator-customer-clean.csv\", format=\"csv\", header=True)\r\n",
+							"dfCustomers.show(10)\r\n",
+							"\r\n",
+							"# Create an instance of Hyperspace\r\n",
+							"hyperspace = Hyperspace(spark)"
+						],
+						"attachments": null,
+						"outputs": [],
+						"execution_count": 4
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"#create indexes: each one contains a name, a set of indexed columns and a set of included columns\r\n",
+							"indexConfigSales = IndexConfig(\"indexSALES\", [\"CustomerId\"], [\"TotalAmount\"])\r\n",
+							"indexConfigCustomers = IndexConfig(\"indexCUSTOMERS\", [\"CustomerId\"], [\"FullName\"])\r\n",
+							"\r\n",
+							"hyperspace.createIndex(dfSales, indexConfigSales)\t\t\t# only create index once\r\n",
+							"hyperspace.createIndex(dfCustomers, indexConfigCustomers)\t# only create index once\r\n",
+							"hyperspace.indexes().show()"
+						],
+						"attachments": null,
+						"outputs": [],
+						"execution_count": 5
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"df1 = dfSales.filter(\"\"\"CustomerId = 6\"\"\").select(\"\"\"TotalAmount\"\"\")\r\n",
+							"df1.show()\r\n",
+							"df1.explain(True)"
+						],
+						"attachments": null,
+						"outputs": [],
+						"execution_count": 6
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# Enable Hyperspace - Hyperspace optimization rules become visible to the Spark optimizer and exploit existing Hyperspace indexes to optimize user queries\r\n",
+							"Hyperspace.enable(spark)\r\n",
+							"df1 = dfSales.filter(\"\"\"CustomerId = 6\"\"\").select(\"\"\"TotalAmount\"\"\")\r\n",
+							"df1.show()\r\n",
+							"df1.explain(True)"
+						],
+						"attachments": null,
+						"outputs": [],
+						"execution_count": 7
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"df1 = dfSales.filter(\"\"\"CustomerId = 6\"\"\").select(\"\"\"TotalAmount\"\"\")\r\n",
+							"\r\n",
+							"spark.conf.set(\"spark.hyperspace.explain.displayMode\", \"html\")\r\n",
+							"hyperspace.explain(df1, True, displayHTML)"
+						],
+						"attachments": null,
+						"outputs": [],
+						"execution_count": 8
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"eqJoin = dfSales.join(dfCustomers, dfSales.CustomerId == dfCustomers.CustomerId).select(dfSales.TotalAmount, dfCustomers.FullName)\r\n",
+							"\r\n",
+							"hyperspace.explain(eqJoin, True, displayHTML)"
+						],
+						"attachments": null,
+						"outputs": [],
+						"execution_count": 9
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# Disable Hyperspace - Hyperspace rules no longer apply during query optimization. Disabling Hyperspace has no impact on created indexes because they remain intact\r\n",
+							"Hyperspace.disable(spark)\r\n",
+							"\r\n",
+							"hyperspace.deleteIndex(\"indexSALES\")\r\n",
+							"hyperspace.vacuumIndex(\"indexSALES\")\r\n",
+							"hyperspace.deleteIndex(\"indexCUSTOMERS\")\r\n",
+							"hyperspace.vacuumIndex(\"indexCUSTOMERS\")"
+						],
+						"attachments": null,
+						"outputs": [],
+						"execution_count": 10
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SparkPool01')]",
+			"type": "Microsoft.Synapse/workspaces/bigDataPools",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"autoPause": {
+					"enabled": true,
+					"delayInMinutes": 15
+				},
+				"autoScale": {
+					"enabled": true,
+					"maxNodeCount": 4,
+					"minNodeCount": 3
+				},
+				"nodeCount": 0,
+				"nodeSize": "Small",
+				"nodeSizeFamily": "MemoryOptimized",
+				"sparkVersion": "2.4",
+				"isComputeIsolationEnabled": false,
+				"sessionLevelPackagesEnabled": false,
+				"annotations": []
+			},
+			"dependsOn": [],
+			"location": "australiaeast"
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SQLPool01')]",
+			"type": "Microsoft.Synapse/workspaces/sqlPools",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"collation": "SQL_Latin1_General_CP1_CI_AS",
+				"maxSizeBytes": 263882790666240,
+				"annotations": []
+			},
+			"dependsOn": [],
+			"location": "australiaeast"
+		}
+	]
+}
