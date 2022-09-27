@@ -1,0 +1,220 @@
+{
+	"name": "Hyperspace",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "SparkPool01",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "19487dcd-5419-45d4-a08b-fad6eb30337b"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/6a92bf7a-dc8e-4f7c-b51a-3384671f6ce3/resourceGroups/data-engineering-synapse-1aypsx7/providers/Microsoft.Synapse/workspaces/asaworkspace1aypsx7/bigDataPools/SparkPool01",
+				"name": "SparkPool01",
+				"type": "Spark",
+				"endpoint": "https://asaworkspace1aypsx7.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/SparkPool01",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "2.4",
+				"nodeCount": 3,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"from hyperspace import *  \r\n",
+					"from com.microsoft.hyperspace import *\r\n",
+					"from com.microsoft.hyperspace.index import *\r\n",
+					"\r\n",
+					"# Disable BroadcastHashJoin, so Spark will use standard SortMergeJoin. Currently, Hyperspace indexes utilize SortMergeJoin to speed up query.\r\n",
+					"spark.conf.set(\"spark.sql.autoBroadcastJoinThreshold\", -1)\r\n",
+					"\r\n",
+					"# Replace the value below with the name of your primary ADLS Gen2 account for your Synapse workspace\r\n",
+					"datalake = 'asadatalake1aypsx7'\r\n",
+					"\r\n",
+					"dfSales = spark.read.parquet(\"abfss://wwi-02@\" + datalake + \".dfs.core.windows.net/sale-small/Year=2019/Quarter=Q4/Month=12/*/*.parquet\")\r\n",
+					"dfSales.show(10)\r\n",
+					"\r\n",
+					"dfCustomers = spark.read.load(\"abfss://wwi-02@\" + datalake + \".dfs.core.windows.net/data-generators/generator-customer-clean.csv\", format=\"csv\", header=True)\r\n",
+					"dfCustomers.show(10)\r\n",
+					"\r\n",
+					"# Create an instance of Hyperspace\r\n",
+					"hyperspace = Hyperspace(spark)"
+				],
+				"attachments": null,
+				"execution_count": 4
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#create indexes: each one contains a name, a set of indexed columns and a set of included columns\r\n",
+					"indexConfigSales = IndexConfig(\"indexSALES\", [\"CustomerId\"], [\"TotalAmount\"])\r\n",
+					"indexConfigCustomers = IndexConfig(\"indexCUSTOMERS\", [\"CustomerId\"], [\"FullName\"])\r\n",
+					"\r\n",
+					"hyperspace.createIndex(dfSales, indexConfigSales)\t\t\t# only create index once\r\n",
+					"hyperspace.createIndex(dfCustomers, indexConfigCustomers)\t# only create index once\r\n",
+					"hyperspace.indexes().show()"
+				],
+				"attachments": null,
+				"execution_count": 5
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df1 = dfSales.filter(\"\"\"CustomerId = 6\"\"\").select(\"\"\"TotalAmount\"\"\")\r\n",
+					"df1.show()\r\n",
+					"df1.explain(True)"
+				],
+				"attachments": null,
+				"execution_count": 6
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Enable Hyperspace - Hyperspace optimization rules become visible to the Spark optimizer and exploit existing Hyperspace indexes to optimize user queries\r\n",
+					"Hyperspace.enable(spark)\r\n",
+					"df1 = dfSales.filter(\"\"\"CustomerId = 6\"\"\").select(\"\"\"TotalAmount\"\"\")\r\n",
+					"df1.show()\r\n",
+					"df1.explain(True)"
+				],
+				"attachments": null,
+				"execution_count": 7
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df1 = dfSales.filter(\"\"\"CustomerId = 6\"\"\").select(\"\"\"TotalAmount\"\"\")\r\n",
+					"\r\n",
+					"spark.conf.set(\"spark.hyperspace.explain.displayMode\", \"html\")\r\n",
+					"hyperspace.explain(df1, True, displayHTML)"
+				],
+				"attachments": null,
+				"execution_count": 8
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"eqJoin = dfSales.join(dfCustomers, dfSales.CustomerId == dfCustomers.CustomerId).select(dfSales.TotalAmount, dfCustomers.FullName)\r\n",
+					"\r\n",
+					"hyperspace.explain(eqJoin, True, displayHTML)"
+				],
+				"attachments": null,
+				"execution_count": 9
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Disable Hyperspace - Hyperspace rules no longer apply during query optimization. Disabling Hyperspace has no impact on created indexes because they remain intact\r\n",
+					"Hyperspace.disable(spark)\r\n",
+					"\r\n",
+					"hyperspace.deleteIndex(\"indexSALES\")\r\n",
+					"hyperspace.vacuumIndex(\"indexSALES\")\r\n",
+					"hyperspace.deleteIndex(\"indexCUSTOMERS\")\r\n",
+					"hyperspace.vacuumIndex(\"indexCUSTOMERS\")"
+				],
+				"attachments": null,
+				"execution_count": 10
+			}
+		]
+	}
+}

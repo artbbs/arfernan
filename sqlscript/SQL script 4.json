@@ -1,0 +1,17 @@
+{
+	"name": "SQL script 4",
+	"properties": {
+		"content": {
+			"query": "IF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseParquetFormat') \n\tCREATE EXTERNAL FILE FORMAT [SynapseParquetFormat] \n\tWITH ( FORMAT_TYPE = PARQUET)\nGO\n\nIF NOT EXISTS (SELECT * FROM sys.external_data_sources WHERE name = 'wwi-02_asadatalake1aypsx7_dfs_core_windows_net') \n\tCREATE EXTERNAL DATA SOURCE [wwi-02_asadatalake1aypsx7_dfs_core_windows_net] \n\tWITH (\n\t\tLOCATION = 'abfss://wwi-02@asadatalake1aypsx7.dfs.core.windows.net' \n\t)\nGO\n\nCREATE EXTERNAL TABLE All2019Sales (\n\t[TransactionId] nvarchar(4000),\n\t[CustomerId] int,\n\t[ProductId] smallint,\n\t[Quantity] smallint,\n\t[Price] numeric(38,18),\n\t[TotalAmount] numeric(38,18),\n\t[TransactionDate] int,\n\t[ProfitAmount] numeric(38,18),\n\t[Hour] smallint,\n\t[Minute] smallint,\n\t[StoreId] smallint\n\t)\n\tWITH (\n\tLOCATION = 'sale-small/Year=2019/Quarter=Q4/Month=12/Day=20191231/sale-small-20191231-snappy.parquet',\n\tDATA_SOURCE = [wwi-02_asadatalake1aypsx7_dfs_core_windows_net],\n\tFILE_FORMAT = [SynapseParquetFormat]\n\t)\nGO\n\n\nSELECT TOP 100 * FROM dbo.All2019Sales\nGO",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "afb",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

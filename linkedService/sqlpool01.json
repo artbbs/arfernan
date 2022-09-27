@@ -1,0 +1,19 @@
+{
+	"name": "sqlpool01",
+	"type": "Microsoft.Synapse/workspaces/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureSqlDW",
+		"typeProperties": {
+			"connectionString": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=asaworkspace1aypsx7.sql.azuresynapse.net;Initial Catalog=SQLPool01;User ID=asa.sql.admin",
+			"password": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "asakeyvault1aypsx7",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "SQL-USER-ASA"
+			}
+		}
+	}
+}

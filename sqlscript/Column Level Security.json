@@ -1,0 +1,16 @@
+{
+	"name": "Column Level Security",
+	"properties": {
+		"content": {
+			"query": null,
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"name": "SQLPool01",
+				"type": "SqlPool"
+			}
+		},
+		"type": "SqlQuery"
+	}
+}

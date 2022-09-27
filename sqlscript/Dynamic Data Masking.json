@@ -1,0 +1,16 @@
+{
+	"name": "Dynamic Data Masking",
+	"properties": {
+		"content": {
+			"query": null,
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"name": "SQLPool01",
+				"type": "SqlPool"
+			}
+		},
+		"type": "SqlQuery"
+	}
+}
