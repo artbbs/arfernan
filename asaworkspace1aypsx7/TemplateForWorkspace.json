@@ -462,6 +462,46 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/SQL script 5')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- This is auto-generated code\nSELECT\n    TOP 100 *\nFROM\n    OPENROWSET(\n        BULK 'https://asadatalake1aypsx7.dfs.core.windows.net/wwi-02/sale-poc/sale-20170501.csv',\n        FORMAT = 'CSV',\n        PARSER_VERSION = '2.0'\n    ) AS [result]\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "master",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SQL script 6')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "SELECT\n    TOP 100 *\nFROM\n    OPENROWSET(\n        BULK 'https://asadatalake1aypsx7.dfs.core.windows.net/wwi-02/sale-poc/sale-20170501.csv',\n        FORMAT = 'CSV',\n        PARSER_VERSION='2.0',\n        FIRSTROW = 2\n    ) WITH (\n        [TransactionId] varchar(50),\n        [CustomerId] int,\n        [ProductId] int,\n        [Quantity] int,\n        [Price] decimal(10,3),\n        [TotalAmount] decimal(10,3),\n        [TransactionDate] varchar(8),\n        [ProfitAmount] decimal(10,3),\n        [Hour] int,\n        [Minute] int,\n        [StoreId] int\n    ) AS [result]\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "master",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/Hyperspace')]",
 			"type": "Microsoft.Synapse/workspaces/notebooks",
 			"apiVersion": "2019-06-01-preview",
@@ -692,6 +732,18 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/SQLPool01')]",
+			"type": "Microsoft.Synapse/workspaces/sqlPools",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"collation": "SQL_Latin1_General_CP1_CI_AS",
+				"maxSizeBytes": 263882790666240,
+				"annotations": []
+			},
+			"dependsOn": [],
+			"location": "australiaeast"
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/SparkPool01')]",
 			"type": "Microsoft.Synapse/workspaces/bigDataPools",
 			"apiVersion": "2019-06-01-preview",
@@ -711,18 +763,6 @@
 				"sparkVersion": "2.4",
 				"isComputeIsolationEnabled": false,
 				"sessionLevelPackagesEnabled": false,
-				"annotations": []
-			},
-			"dependsOn": [],
-			"location": "australiaeast"
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/SQLPool01')]",
-			"type": "Microsoft.Synapse/workspaces/sqlPools",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"collation": "SQL_Latin1_General_CP1_CI_AS",
-				"maxSizeBytes": 263882790666240,
 				"annotations": []
 			},
 			"dependsOn": [],
